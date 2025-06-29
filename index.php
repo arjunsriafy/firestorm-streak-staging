@@ -274,6 +274,9 @@
                     $i++;
                 }
             }
+            usort($allMilestonesApp, function ($a, $b) {
+                return (int)$a['streakCount'] - (int)$b['streakCount'];
+            });
             $allMilestonesApp = array_map(function($milestone) {
                 unset($milestone['localizations']);
                 return $milestone;
@@ -294,9 +297,13 @@
             $allStreaksApp = getAllStreaksApp($baseUrlStreaks, $headers, array('id' => $streakId));
             $baseUrlStreakLogs = "https://$projectId.supabase.co/rest/v1/streakLog";
             $allStreakLogsApp = getAllStreakLogsApp($baseUrlStreakLogs, $headers, array('appname' => $_GET['appname'], 'userId' => $_GET['userId'], 'order' => ['created_at' => 'desc']));
+
+            $streak_marked = array_column($allStreakLogsApp, 'created_at');
+
             $maxCount = max(array_map('intval', array_column($allStreakLogsApp, 'count')));
             $allStreaksApp[0]["longest_streak"] = $maxCount;
-            $allStreaksApp[0]["current_streak"] = $allStreakLogsApp[0]["count"];
+            $allStreaksApp[0]["current_streak"] = (int)$allStreakLogsApp[0]["count"];
+            $allStreaksApp[0]["streak_marked"] = $streak_marked;
 
             $allStreaks = array_map(function($streak) {
                 unset($streak['localizations']);
