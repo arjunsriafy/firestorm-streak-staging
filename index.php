@@ -299,11 +299,13 @@
             $allStreakLogsApp = getAllStreakLogsApp($baseUrlStreakLogs, $headers, array('appname' => $_GET['appname'], 'userId' => $_GET['userId'], 'order' => ['created_at' => 'desc']));
 
             $streak_marked = array_column($allStreakLogsApp, 'created_at');
+            rsort($streak_marked);
 
             $maxCount = max(array_map('intval', array_column($allStreakLogsApp, 'count')));
             $allStreaksApp[0]["longest_streak"] = $maxCount;
             $allStreaksApp[0]["current_streak"] = (int)$allStreakLogsApp[0]["count"];
             $allStreaksApp[0]["streak_marked"] = $streak_marked;
+            $allStreaksApp[0]["restore_streak_saved"] = 0;
 
             $allStreaks = array_map(function($streak) {
                 unset($streak['localizations']);
