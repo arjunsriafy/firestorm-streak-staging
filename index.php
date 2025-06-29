@@ -305,14 +305,14 @@
             $allStreaksApp[0]["longest_streak"] = $maxCount;
             $allStreaksApp[0]["current_streak"] = (int)$allStreakLogsApp[0]["count"];
             $allStreaksApp[0]["streak_marked"] = $streak_marked;
-            $allStreaksApp[0]["restore_streak_saved"] = 0;
+            // $allStreaksApp[0]["restore_streak_saved"] = 0;
 
             $allStreaks = array_map(function($streak) {
                 unset($streak['localizations']);
                 return $streak;
             }, $allStreaksApp);
             
-            echo json_encode(array("streaks" => $allStreaks[0], "milestones" => $milestones));
+            echo json_encode(array("streaks" => $allStreaks[0], "milestones" => $milestones, "restore_streak_saved" => 0));
             
             exit;
 
