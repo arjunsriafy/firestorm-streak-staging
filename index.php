@@ -291,7 +291,8 @@
             echo json_encode(array("streaks" => $allStreaks, "milestones" => $milestones));
         break;
         default:
-            echo "No method choosed";
+            http_response_code(401);
+            echo jsom_encode(array("status" => "error", "message" => "No method choosed"));
     }
 
     // Functions for admin streaks
