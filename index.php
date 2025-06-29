@@ -4,7 +4,7 @@
         ini_set('display_startup_errors', 1);
         error_reporting(E_ALL);
     } else {
-        // On staging/production: hide errors
+        // On staging/production: hide error
         ini_set('display_errors', 0);
         error_reporting(0);
     }
