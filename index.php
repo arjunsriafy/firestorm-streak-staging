@@ -188,8 +188,16 @@
                 $count = (int)$checkYesterdayStreakLogged[0]['count'] + 1;
             }
             else{
+                // $baseUrlPaused = "https://$projectId.supabase.co/rest/v1/streakPause";
+                // $count = getUpdatedStreakCount($baseUrl, $baseUrlPaused, $headers, array(
+                //     'appname' => $_GET['appname'],
+                //     'userId' => $_GET['userId'],
+                //     'streakSku' => $_GET['streakSku']
+                // ));
+                // echo $count;exit;
                 $count = 1;
             }
+            // echo $count;exit;
             $payloadToInsert['count'] = $count;
             $new = logStreak($baseUrl, $headers, $payloadToInsert);
             $baseUrlMilestones = "https://$projectId.supabase.co/rest/v1/milestones";
@@ -842,5 +850,81 @@
         $response = curl_exec($ch);
         curl_close($ch);
         return $response;
+    }
+
+    function checkIfPaused($baseUrl, $headers, $params) {
+        $appname = urlencode($params['appname']);
+        $userId = urlencode($params['userId']);
+    
+        $url = "$baseUrl?appname=eq.$appname&userId=eq.$userId&select=is_paused,paused_at";
+    
+        $ch = curl_init();
+        curl_setopt_array($ch, [
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER => $headers,
+        ]);
+    
+        $response = curl_exec($ch);
+        curl_close($ch);
+    
+        return json_decode($response, true);
+    }
+
+    function getUpdatedStreakCount($baseUrl, $baseUrlPaused, $headers, $params) {
+        $appname = $params['appname'];
+        $userId = $params['userId'];
+        $streakSku = $params['streakSku'];
+
+        $lastStreakLog = streakLastLoggedAt($baseUrl, $headers, $params);
+
+        if (!$lastStreakLog || empty($lastStreakLog[0]['created_at'])) {
+            return 1;
+        }
+    
+        $lastLoggedDate = new DateTime($lastStreakLog[0]['created_at']);
+        $currentCount = (int)$lastStreakLog[0]['count'];
+    
+        // 2. Check paused status
+        $pauseData = checkIfPaused($baseUrlPaused, $headers, $params);
+        echo json_encode($pauseData);exit;
+        $isPaused = isset($pauseData[0]['is_paused']) && $pauseData[0]['is_paused'] == 1;
+        $pausedAt = isset($pauseData[0]['paused_at']) ? new DateTime($pauseData[0]['paused_at']) : null;
+    
+        $yesterday = (new DateTime())->modify('-1 day');
+        $missedDays = $lastLoggedDate->diff($yesterday)->days;
+    
+        if ($isPaused) {
+            if ($pausedAt && $pausedAt <= $yesterday) {
+                // Missed a day or more before pausing
+                return 1;
+            } else {
+                // Paused before missing a day
+                return $currentCount + 1;
+            }
+        }
+    
+        // Not paused: check if streak is broken
+        return ($missedDays <= 1) ? $currentCount + 1 : 1;
+    }
+    
+    function streakLastLoggedAt($baseUrl, $headers, $params) {
+        $appname = urlencode($params['appname']);
+        $userId = urlencode($params['userId']);
+        $streakSku = urlencode($params['streakSku']);
+    
+        $url = "$baseUrl?appname=eq.$appname&userId=eq.$userId&streakSku=eq.$streakSku&order=created_at.desc&limit=1&select=count,created_at";
+    
+        $ch = curl_init();
+        curl_setopt_array($ch, [
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER => $headers,
+        ]);
+    
+        $response = curl_exec($ch);
+        curl_close($ch);
+    
+        return json_decode($response, true);
     }
 ?>
