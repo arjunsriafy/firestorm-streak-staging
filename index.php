@@ -292,7 +292,7 @@
         break;
         default:
             http_response_code(401);
-            echo jsom_encode(array("status" => "error", "message" => "No method choosed"));
+            echo json_encode(array("status" => "error", "message" => "No method choosed"));
     }
 
     // Functions for admin streaks
