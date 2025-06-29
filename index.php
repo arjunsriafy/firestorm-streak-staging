@@ -39,6 +39,9 @@
     ];
     $langs = array('fr', 'it', 'de', 'es', 'pl');
     switch ($method) {
+        case "app-health-check":
+            echo json_encode(array("status" => "success", "message" => "Health check running"));
+            break;
         // // Admin streaks
         // case "admin-get-all-streaks":
         //     // Read all streaks admin
