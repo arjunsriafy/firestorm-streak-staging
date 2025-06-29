@@ -16,10 +16,7 @@
         $inputPayloadFiles = $_FILES;
     }
 
-    $method = '';
-    if(isset($inputPayload['method']) && $inputPayload['method'] != ''){
-        $method = $inputPayload['method'];
-    }
+    $method = $_GET['method'] ?? '';
     
     $projectId = 'nhvhkhlpxuvnzhorhrnd';
     $apiKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5odmhraGxweHV2bnpob3Jocm5kIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MTAyMTQ0MywiZXhwIjoyMDY2NTk3NDQzfQ.g-8ClcEkhrykKAWDdEC3La22sJq4M5IzSpgZT9H4OJg';
@@ -44,7 +41,7 @@
         case "insert-streak-admin":
             // Insert streak admin
             $baseUrl = "https://$projectId.supabase.co/rest/v1/streaks";
-            $exists = checkStreakExists($baseUrl, $headers, array('sku' => $inputPayload['payload']['sku']));
+            $exists = checkStreakExists($baseUrl, $headers, array('sku' => $inputPayload['sku']));
             if ($exists) {
                 http_response_code(403);
                 echo json_encode(array("status" => "error", "message" => "Streak already exist with the same sku"));
@@ -52,10 +49,10 @@
             } else {
                 $translatedArr = array();
                 foreach($langs as $lang){
-                    $translatedArr[$lang]['name'] = translateText($inputPayload['payload']['name'], $lang);
-                    $translatedArr[$lang]['description'] = translateText($inputPayload['payload']['description'], $lang);
+                    $translatedArr[$lang]['name'] = translateText($inputPayload['name'], $lang);
+                    $translatedArr[$lang]['description'] = translateText($inputPayload['description'], $lang);
                 }
-                $payloadToInsert = $inputPayload['payload'];
+                $payloadToInsert = $inputPayload;
                 $payloadToInsert['localizations'] = json_encode($translatedArr);
                 $new = insertStreakAdmin($baseUrl, $headers, $payloadToInsert);
                 echo json_encode(array("status" => "success", "message" => "Streak inserted succcesfully", "response" => $new));
@@ -65,7 +62,7 @@
             // Update streak admin
             $baseUrl = "https://$projectId.supabase.co/rest/v1/streaks";
             $id = $inputPayload['id'];
-            $exists = checkStreakExists($baseUrl, $headers, array('sku' => $inputPayload['payload']['sku'], 'id' => ['not.eq' => $id]));
+            $exists = checkStreakExists($baseUrl, $headers, array('sku' => $inputPayload['sku'], 'id' => ['not.eq' => $id]));
             if ($exists) {
                 http_response_code(403);
                 echo json_encode(array("status" => "error", "message" => "Another streak exist with the same sku"));
@@ -73,10 +70,10 @@
             } else {
                 $translatedArr = array();
                 foreach($langs as $lang){
-                    $translatedArr[$lang]['name'] = translateText($inputPayload['payload']['name'], $lang);
-                    $translatedArr[$lang]['description'] = translateText($inputPayload['payload']['description'], $lang);
+                    $translatedArr[$lang]['name'] = translateText($inputPayload['name'], $lang);
+                    $translatedArr[$lang]['description'] = translateText($inputPayload['description'], $lang);
                 }
-                $payloadToInsert = $inputPayload['payload'];
+                $payloadToInsert = $inputPayload;
                 $payloadToInsert['localizations'] = json_encode($translatedArr);
                 $new = updateStreakAdmin($baseUrl, $headers, $id, $payloadToInsert);
                 echo json_encode(array("status" => "success", "message" => "Streak updated succcesfully", "response" => $new));
@@ -85,7 +82,7 @@
         case "delete-streak-admin":
             // Delete streak admin
             $baseUrl = "https://$projectId.supabase.co/rest/v1/streaks";
-            $id = $inputPayload['id'];
+            $id = $_GET['id'];
             $new = deleteStreakAdmin($baseUrl, $headers, $id);
             echo json_encode(array("status" => "success", "message" => "Streak deleted succesfully"));
         break;
@@ -100,7 +97,7 @@
         case "insert-milestone-admin":
             // Insert milestone admin
             $baseUrl = "https://$projectId.supabase.co/rest/v1/milestones";
-            $exists = checkMilestoneExists($baseUrl, $headers, array('sku' => $inputPayload['payload']['sku'], 'streakSku' => $inputPayload['payload']['streakSku'], 'streakId' => $inputPayload['payload']['streakId']));
+            $exists = checkMilestoneExists($baseUrl, $headers, array('sku' => $inputPayload['sku'], 'streakSku' => $inputPayload['streakSku'], 'streakId' => $inputPayload['streakId']));
             if ($exists) {
                 http_response_code(403);
                 echo json_encode(array("status" => "error", "message" => "Milestone already exist with the same sku"));
@@ -108,14 +105,14 @@
             } else {
                 $translatedArr = array();
                 foreach($langs as $lang){
-                    $translatedArr[$lang]['name'] = translateText($inputPayload['payload']['name'], $lang);
-                    $translatedArr[$lang]['description'] = translateText($inputPayload['payload']['description'], $lang);
+                    $translatedArr[$lang]['name'] = translateText($inputPayload['name'], $lang);
+                    $translatedArr[$lang]['description'] = translateText($inputPayload['description'], $lang);
                 }
-                $payloadToInsert = $inputPayload['payload'];
+                $payloadToInsert = $inputPayload;
                 $payloadToInsert['localizations'] = json_encode($translatedArr);
                 $baseUrlStorage = "https://$projectId.supabase.co";
                 $bucket = "firestorm";
-                $imageUrl = uploadImageToStorage($baseUrlStorage, $apiKey, $bucket, $inputPayload['payload']['sku'], $inputPayloadFiles);
+                $imageUrl = uploadImageToStorage($baseUrlStorage, $apiKey, $bucket, $inputPayload['sku'], $inputPayloadFiles);
                 $payloadToInsert['imageColoredUrl'] = $imageUrl;
                 $new = insertMilestoneAdmin($baseUrl, $headers, $payloadToInsert);
                 echo json_encode(array("status" => "success", "message" => "Milestone inserted succcesfully", "response" => $new));
@@ -125,7 +122,7 @@
             // Update milestone admin
             $baseUrl = "https://$projectId.supabase.co/rest/v1/milestones";
             $id = $inputPayload['id'];
-            $exists = checkMilestoneExists($baseUrl, $headers, array('sku' => $inputPayload['payload']['sku'], 'streakSku' => $inputPayload['payload']['streakSku'], 'streakId' => $inputPayload['payload']['streakId'], 'id' => ['not.eq' => $id]));
+            $exists = checkMilestoneExists($baseUrl, $headers, array('sku' => $inputPayload['sku'], 'streakSku' => $inputPayload['streakSku'], 'streakId' => $inputPayload['streakId'], 'id' => ['not.eq' => $id]));
             if ($exists) {
                 http_response_code(403);
                 echo json_encode(array("status" => "error", "message" => "Another milestone exist with the same sku"));
@@ -133,14 +130,14 @@
             } else {
                 $translatedArr = array();
                 foreach($langs as $lang){
-                    $translatedArr[$lang]['name'] = translateText($inputPayload['payload']['name'], $lang);
-                    $translatedArr[$lang]['description'] = translateText($inputPayload['payload']['description'], $lang);
+                    $translatedArr[$lang]['name'] = translateText($inputPayload['name'], $lang);
+                    $translatedArr[$lang]['description'] = translateText($inputPayload['description'], $lang);
                 }
-                $payloadToInsert = $inputPayload['payload'];
+                $payloadToInsert = $inputPayload;
                 $payloadToInsert['localizations'] = json_encode($translatedArr);
                 $baseUrlStorage = "https://$projectId.supabase.co";
                 $bucket = "firestorm";
-                $imageUrl = uploadImageToStorage($baseUrlStorage, $apiKey, $bucket, $inputPayload['payload']['sku'], $inputPayloadFiles);
+                $imageUrl = uploadImageToStorage($baseUrlStorage, $apiKey, $bucket, $inputPayload['sku'], $inputPayloadFiles);
                 $payloadToInsert['imageColoredUrl'] = $imageUrl;
                 $new = updateMilestoneAdmin($baseUrl, $headers, $id, $payloadToInsert);
                 echo json_encode(array("status" => "success", "message" => "Milestone updated succcesfully", "response" => $new));
@@ -158,14 +155,14 @@
         case "log-a-streak":
             // Log a streak
             $baseUrl = "https://$projectId.supabase.co/rest/v1/streakLog";
-            $payloadToInsert = $inputPayload['payload'];
-            $lang = $payloadToInsert['lang'];
-            unset($payloadToInsert['lang']);
+            $payloadToInsert = array('appname' => $_GET['appname'], 'userId' => $_GET['userId'], 'streakSku' => $_GET['streakSku']);
+            $lang = $_GET['lang'];
+            unset($_GET['lang']);
             $baseUrlStreaks =  "https://$projectId.supabase.co/rest/v1/streaks";
-            $getStreakData = getStreakData($baseUrlStreaks, $headers, array('appname' => $payloadToInsert['appname'], 'sku' => $payloadToInsert['streakSku']));
+            $getStreakData = getStreakData($baseUrlStreaks, $headers, array('appname' => $_GET['appname'], 'sku' => $_GET['streakSku']));
             if ($getStreakData) {
                 if(isset($getStreakData[0]['streakType']) && $getStreakData[0]['streakType'] == 'daily'){
-                    $existsTodayStreak = getStreakLogData($baseUrl, $headers, array('appname' => $payloadToInsert['appname'], 'userId' => $payloadToInsert['userId'], 'streakSku' => $payloadToInsert['streakSku']));
+                    $existsTodayStreak = getStreakLogData($baseUrl, $headers, array('appname' => $_GET['appname'], 'userId' => $_GET['userId'], 'streakSku' => $_GET['streakSku']));
                     if ($existsTodayStreak) {
                         http_response_code(403);
                         echo json_encode(array("status" => "error", "message" => "This streak is already marked today"));
@@ -178,7 +175,7 @@
                 echo json_encode(array("status" => "error", "message" => "This streak not exist for this app"));
                 exit;
             }
-            $checkYesterdayStreakLogged = checkYesterdayStreakLogged($baseUrl, $headers, array('appname' => $payloadToInsert['appname'], 'userId' => $payloadToInsert['userId'], 'streakSku' => $payloadToInsert['streakSku']));
+            $checkYesterdayStreakLogged = checkYesterdayStreakLogged($baseUrl, $headers, array('appname' => $_GET['appname'], 'userId' => $_GET['userId'], 'streakSku' => $_GET['streakSku']));
             if ($checkYesterdayStreakLogged) {
                 $count = (int)$checkYesterdayStreakLogged[0]['count'] + 1;
             }
@@ -188,12 +185,12 @@
             $payloadToInsert['count'] = $count;
             $new = logStreak($baseUrl, $headers, $payloadToInsert);
             $baseUrlMilestones = "https://$projectId.supabase.co/rest/v1/milestones";
-            $checkAnyMilestoneExist = checkAnyMilestoneExist($baseUrlMilestones, $headers, array('streakSku' => $payloadToInsert['streakSku'], 'streakCount' => $count));
+            $checkAnyMilestoneExist = checkAnyMilestoneExist($baseUrlMilestones, $headers, array('streakSku' => $_GET['streakSku'], 'streakCount' => $count));
             if ($checkAnyMilestoneExist) {
                 $baseUrlUserMilestones = "https://$projectId.supabase.co/rest/v1/userMilestones";
                 $insertUserMileStonePayload = array(
-                    "appname" => $payloadToInsert['appname'],
-                    "userId" => $payloadToInsert['userId'],
+                    "appname" => $_GET['appname'],
+                    "userId" => $_GET['userId'],
                     "milestoneSku" => $checkAnyMilestoneExist[0]['sku'],
                     "milestoneId" => $checkAnyMilestoneExist[0]['id'],
                 );
@@ -213,37 +210,37 @@
                 echo json_encode(array("status" => "success", "message" => "Streak logged succesfully"));
             }
         break;
-        case "pause-resume-streak":
-            // Pause or resume streak
+        case "pause-streak":
+            // Pause streak
             $baseUrl = "https://$projectId.supabase.co/rest/v1/streakPause";
-            $payloadToInsert = $inputPayload['payload'];
-            $checkPauseExist = checkPauseExist($baseUrl, $headers, array('appname' => $payloadToInsert['appname'], 'userId' => $payloadToInsert['userId']));
+            $checkPauseExist = checkPauseExist($baseUrl, $headers, array('appname' => $_GET['appname'], 'userId' => $_GET['userId']));
             if ($checkPauseExist) {
-                if($checkPauseExist[0]['is_pause'] == "1"){
-                    $id = $checkPauseExist[0]['id'];
-                    $new = updatePauseResumeStreak($baseUrl, $headers, $id, array("is_pause" => "0"));
-                    echo json_encode(array("status" => "success", "message" => "Streak paused succesfully", "response" => $new));
-                }
-                else{
-                    $id = $checkPauseExist[0]['id'];
-                    $new = updatePauseResumeStreak($baseUrl, $headers, $id, array("is_pause" => "1"));
-                    echo json_encode(array("status" => "success", "message" => "Streak resumed succcesfully", "response" => $new));
-                }
+                $id = $checkPauseExist[0]['id'];
+                $new = updatePauseResumeStreak($baseUrl, $headers, $id, array("is_pause" => "1"));
+                echo json_encode(array("status" => "success", "message" => "Streak paused succcesfully", "response" => $new));
             }
             else{
                 $new = pauseResumeStreak($baseUrl, $headers, $payloadToInsert);
                 echo json_encode(array("status" => "success", "message" => "Streak paused succesfully", "response" => $new));
             }
         break;
+        case "resume-streak":
+            // Resume streak
+            $baseUrl = "https://$projectId.supabase.co/rest/v1/streakPause";
+            $checkPauseExist = checkPauseExist($baseUrl, $headers, array('appname' => $_GET['appname'], 'userId' => $_GET['userId']));
+            if ($checkPauseExist) {
+                $id = $checkPauseExist[0]['id'];
+                $new = updatePauseResumeStreak($baseUrl, $headers, $id, array("is_pause" => "0"));
+                echo json_encode(array("status" => "success", "message" => "Streak resumed succesfully", "response" => $new));
+            }
+        break;
         case "get-all-streaks":
             // Read all streaks for an app
-            $payloadToInsert = $inputPayload['payload'];
-
             $baseUrlStreaks = "https://$projectId.supabase.co/rest/v1/streaks";
-            $allStreaksApp = getAllStreaksApp($baseUrlStreaks, $headers, array('appname' => $payloadToInsert['appname']));
+            $allStreaksApp = getAllStreaksApp($baseUrlStreaks, $headers, array('appname' => $_GET['appname']));
 
             $baseUrlStreakLogs = "https://$projectId.supabase.co/rest/v1/streakLog";
-            $allStreakLogsApp = getAllStreakLogsApp($baseUrlStreakLogs, $headers, array('appname' => $payloadToInsert['appname'], 'userId' => $payloadToInsert['userId']));
+            $allStreakLogsApp = getAllStreakLogsApp($baseUrlStreakLogs, $headers, array('appname' => $_GET['appname'], 'userId' => $_GET['userId']));
 
             $maxCounts = [];
             foreach ($allStreakLogsApp as $log) {
@@ -260,23 +257,27 @@
             }, $allStreaksApp);
 
             $baseUrlMilestones = "https://$projectId.supabase.co/rest/v1/milestones";
-            $allMilestonesApp = getAllMilestonesApp($baseUrlMilestones, $headers, $payloadToInsert['appname']);
-            if(isset($payloadToInsert['lang']) && $payloadToInsert['lang'] != "en"){
+            $allMilestonesApp = getAllMilestonesApp($baseUrlMilestones, $headers, $_GET['appname']);
+            if(isset($_GET['lang']) && $_GET['lang'] != "en"){
                 $i = 0;
                 foreach ($allMilestonesApp as $milestone) {
                     if (!empty($milestone['localizations'])) {
                         $localizations = json_decode($milestone['localizations'], true);
-                        if (isset($localizations[$payloadToInsert['lang']])) {
-                            $allMilestonesApp[$i]['name'] = $localizations[$payloadToInsert['lang']]['name'];
-                            $allMilestonesApp[$i]['description'] = $localizations[$payloadToInsert['lang']]['description'];
+                        if (isset($localizations[$_GET['lang']])) {
+                            $allMilestonesApp[$i]['name'] = $localizations[$_GET['lang']]['name'];
+                            $allMilestonesApp[$i]['description'] = $localizations[$_GET['lang']]['description'];
                         }
                     }
                     $i++;
                 }
             }
+            $allMilestonesApp = array_map(function($milestone) {
+                unset($milestone['localizations']);
+                return $milestone;
+            }, $allMilestonesApp);
 
             $baseUrlStreaks = "https://$projectId.supabase.co/rest/v1/userMilestones";
-            $allAchievedMilestonesOfUser = getAllAchievedMilestonesOfUser($baseUrlStreaks, $headers, array('appname' => $payloadToInsert['appname'], 'userId' => $payloadToInsert['userId']));
+            $allAchievedMilestonesOfUser = getAllAchievedMilestonesOfUser($baseUrlStreaks, $headers, array('appname' => $_GET['appname'], 'userId' => $_GET['userId']));
             $completedIds = array_column($allAchievedMilestonesOfUser, 'milestoneId');
             $milestones = array_map(function ($item) use ($completedIds) {
                 $item['isCompleted'] = in_array((string)$item['id'], $completedIds) ? "1" : "0";
@@ -767,5 +768,70 @@
         } else {
             return "";
         }
+    }
+
+    function logStreakWithPauseLogic($supabaseUrl, $headers, $userId, $appname, $streakSku) {
+        // Step 1: Get latest streak log
+        $logUrl = "$supabaseUrl/rest/v1/streak_log?userId=eq.$userId&appname=eq.$appname&streakSku=eq.$streakSku&order=created_at.desc&limit=1";
+        $logRes = json_decode(httpGet($logUrl, $headers), true);
+    
+        $count = 1;
+        $resume = true;
+    
+        if (!empty($logRes)) {
+            $lastLogDate = new DateTime($logRes[0]['created_at']);
+            $expectedNextDate = clone $lastLogDate;
+            $expectedNextDate->modify('+1 day');
+    
+            // Step 2: Check if app is paused
+            $pausedUrl = "$supabaseUrl/rest/v1/paused?userId=eq.$userId&appname=eq.$appname&order=created_at.desc&limit=1";
+            $pausedRes = json_decode(httpGet($pausedUrl, $headers), true);
+    
+            if (!empty($pausedRes) && $pausedRes[0]['is_paused']) {
+                $pauseDate = new DateTime($pausedRes[0]['created_at']);
+    
+                // Pause made AFTER next expected log → reset
+                if ($pauseDate > $expectedNextDate) {
+                    $resume = false;
+                }
+            }
+    
+            $count = $resume ? ((int)$logRes[0]['count'] + 1) : 1;
+        }
+    
+        // Step 3: Log new streak
+        $payload = json_encode([
+            'userId' => $userId,
+            'appname' => $appname,
+            'streakSku' => $streakSku,
+            'count' => $count,
+            'created_at' => date('c')
+        ]);
+    
+        $insertUrl = "$supabaseUrl/rest/v1/streak_log";
+        $insertRes = httpPost($insertUrl, $headers, $payload);
+    
+        return $insertRes;
+    }
+    
+    // Helper functions
+    function httpGet($url, $headers) {
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        $response = curl_exec($ch);
+        curl_close($ch);
+        return $response;
+    }
+    
+    function httpPost($url, $headers, $payload) {
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        $response = curl_exec($ch);
+        curl_close($ch);
+        return $response;
     }
 ?>
