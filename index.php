@@ -1,7 +1,13 @@
 <?php
-    ini_set('display_errors', '1');
-    ini_set('display_startup_errors', '1');
-    error_reporting(E_ALL);
+    if (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false) {
+        ini_set('display_errors', 1);
+        ini_set('display_startup_errors', 1);
+        error_reporting(E_ALL);
+    } else {
+        // On staging/production: hide errors
+        ini_set('display_errors', 0);
+        error_reporting(0);
+    }
     header('Content-Type: application/json');
 
     // echo file_get_contents("php://input");exit;
