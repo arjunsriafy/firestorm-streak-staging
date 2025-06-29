@@ -1,8 +1,8 @@
 
 <?php
-    // ini_set('display_errors', '1');
-    // ini_set('display_startup_errors', '1');
-    // error_reporting(E_ALL);
+    ini_set('display_errors', '1');
+    ini_set('display_startup_errors', '1');
+    error_reporting(E_ALL);
     header('Content-Type: application/json');
 
     // echo file_get_contents("php://input");exit;
@@ -17,7 +17,9 @@
         $inputPayloadFiles = $_FILES;
     }
 
-    $method = $_GET['method'] ?? '';
+    $user = $_GET['user'] ?? '';
+    $action = $_GET['action'] ?? '';
+    $method = "$user-$action";
     
     $projectId = 'nhvhkhlpxuvnzhorhrnd';
     $apiKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5odmhraGxweHV2bnpob3Jocm5kIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MTAyMTQ0MywiZXhwIjoyMDY2NTk3NDQzfQ.g-8ClcEkhrykKAWDdEC3La22sJq4M5IzSpgZT9H4OJg';
@@ -33,13 +35,13 @@
     $langs = array('fr', 'it', 'de', 'es', 'pl');
     switch ($method) {
         // Admin streaks
-        case "get-all-streaks-admin":
+        case "admin-get-all-streaks":
             // Read all streaks admin
             $baseUrl = "https://$projectId.supabase.co/rest/v1/streaks";
             $allStreaksAdmin = getAllStreaksAdmin($baseUrl, $headers);
             echo json_encode($allStreaksAdmin);
         break;
-        case "insert-streak-admin":
+        case "admin-insert-streak":
             // Insert streak admin
             $baseUrl = "https://$projectId.supabase.co/rest/v1/streaks";
             $exists = checkStreakExists($baseUrl, $headers, array('sku' => $inputPayload['sku']));
@@ -59,7 +61,7 @@
                 echo json_encode(array("status" => "success", "message" => "Streak inserted succcesfully", "response" => $new));
             }
         break;
-        case "update-streak-admin":
+        case "admin-update-streak":
             // Update streak admin
             $baseUrl = "https://$projectId.supabase.co/rest/v1/streaks";
             $id = $inputPayload['id'];
@@ -80,7 +82,7 @@
                 echo json_encode(array("status" => "success", "message" => "Streak updated succcesfully", "response" => $new));
             }
         break;
-        case "delete-streak-admin":
+        case "admin-delete-streak":
             // Delete streak admin
             $baseUrl = "https://$projectId.supabase.co/rest/v1/streaks";
             $id = $_GET['id'];
@@ -89,13 +91,13 @@
         break;
 
         // Admin milestones
-        case "get-all-milestones-admin":
+        case "admin-get-all-milestones":
             // Read all milestones admin
             $baseUrl = "https://$projectId.supabase.co/rest/v1/milestones";
             $allMilestonesAdmin = getAllMilestonesAdmin($baseUrl, $headers);
             echo json_encode($allMilestonesAdmin);
         break;
-        case "insert-milestone-admin":
+        case "admin-insert-milestone":
             // Insert milestone admin
             $baseUrl = "https://$projectId.supabase.co/rest/v1/milestones";
             $exists = checkMilestoneExists($baseUrl, $headers, array('sku' => $inputPayload['sku'], 'streakSku' => $inputPayload['streakSku'], 'streakId' => $inputPayload['streakId']));
@@ -119,7 +121,7 @@
                 echo json_encode(array("status" => "success", "message" => "Milestone inserted succcesfully", "response" => $new));
             }
         break;
-        case "update-milestone-admin":
+        case "admin-update-milestone":
             // Update milestone admin
             $baseUrl = "https://$projectId.supabase.co/rest/v1/milestones";
             $id = $inputPayload['id'];
@@ -144,7 +146,7 @@
                 echo json_encode(array("status" => "success", "message" => "Milestone updated succcesfully", "response" => $new));
             }
         break;
-        case "delete-milestone-admin":
+        case "admin-delete-milestone":
             // Delete milestone admin
             $baseUrl = "https://$projectId.supabase.co/rest/v1/milestones";
             $id = $inputPayload['id'];
@@ -153,7 +155,7 @@
         break;
 
         // APIs for app
-        case "log-a-streak":
+        case "app-log-a-streak":
             // Log a streak
             $baseUrl = "https://$projectId.supabase.co/rest/v1/streakLog";
             $payloadToInsert = array('appname' => $_GET['appname'], 'userId' => $_GET['userId'], 'streakSku' => $_GET['streakSku']);
@@ -211,7 +213,7 @@
                 echo json_encode(array("status" => "success", "message" => "Streak logged succesfully"));
             }
         break;
-        case "pause-streak":
+        case "app-pause-streak":
             // Pause streak
             $baseUrl = "https://$projectId.supabase.co/rest/v1/streakPause";
             $checkPauseExist = checkPauseExist($baseUrl, $headers, array('appname' => $_GET['appname'], 'userId' => $_GET['userId']));
@@ -225,7 +227,7 @@
                 echo json_encode(array("status" => "success", "message" => "Streak paused succesfully", "response" => $new));
             }
         break;
-        case "resume-streak":
+        case "app-resume-streak":
             // Resume streak
             $baseUrl = "https://$projectId.supabase.co/rest/v1/streakPause";
             $checkPauseExist = checkPauseExist($baseUrl, $headers, array('appname' => $_GET['appname'], 'userId' => $_GET['userId']));
@@ -235,7 +237,7 @@
                 echo json_encode(array("status" => "success", "message" => "Streak resumed succesfully", "response" => $new));
             }
         break;
-        case "get-all-streaks":
+        case "app-get-all-streaks":
             // Read all streaks for an app
             $baseUrlStreaks = "https://$projectId.supabase.co/rest/v1/streaks";
             $allStreaksApp = getAllStreaksApp($baseUrlStreaks, $headers, array('appname' => $_GET['appname']));
