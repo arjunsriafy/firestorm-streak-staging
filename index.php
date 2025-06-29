@@ -272,6 +272,11 @@
                 return $streak;
             }, $allStreaksApp);
 
+            $allStreaks = array_map(function($streak) {
+                unset($streak['localizations']);
+                return $streak;
+            }, $allStreaks);
+
             $baseUrlMilestones = "https://$projectId.supabase.co/rest/v1/milestones";
             $allMilestonesApp = getAllMilestonesApp($baseUrlMilestones, $headers, $_GET['appname']);
             if(isset($_GET['lang']) && $_GET['lang'] != "en"){
